@@ -18,7 +18,9 @@ views {
 routes {
     login {
         create account,
+        post account
         login,
+        post login
         logout
     }
     folders {
