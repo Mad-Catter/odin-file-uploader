@@ -9,6 +9,20 @@
 	</head>
 	<body>
 		<%- include("./partials/header") %>
+		
 		<h1>This is index</h1>
+		<% if (locals.errors) { %>
+			<div class="errors">
+				<h2>Invalid username and pasword</h2>
+			</div>
+		<% } %>
+		<form action="/" method="POST">
+			<label for="username">Username:</label>
+			<input type="text" name="username" id="username">
+			<label for="password">Password:</label>
+			<input type="text" name="password" id="password">
+			<button type="submit">Submit</button>
+		</form>
+		<a href="/create-account">Create account?</a>
 	</body>
 </html>

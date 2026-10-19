@@ -10,5 +10,17 @@
 	<body>
 		<%- include("./partials/header") %>
 		<h1>This is create account</h1>
+		<% if (locals.errors) { %>
+			<%- include("./partials/account-errors.ejs") %>
+		<% } %>
+		<form action="/create-account" method="POST">
+			<label for="username">Username:</label>
+			<input type="text" name="username" id="username">
+			<label for="password">Password:</label>
+			<input type="password" name="password" id="password">
+			<label for="confirm-password">Confirm Password:</label>
+			<input type="password" name="confirmPassword" id="confirm-password">
+			<button type="submit">Submit</button>
+		</form>
 	</body>
 </html>

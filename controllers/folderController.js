@@ -1,4 +1,8 @@
-const getAllFolders = (req, res) => {};
+const getAllFolders = (req, res) => {
+	res.render('all-folders-viewer', {
+		title: `File Uploader | ${req.user}'s folders`,
+	});
+};
 
 const createFolder = (req, res) => {};
 

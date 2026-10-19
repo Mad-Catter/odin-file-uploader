@@ -1,0 +1,8 @@
+<div class="errors">
+    <h2>Please fix these errors and try again:</h2>
+    <ul>
+        <% errors.forEach((error) =>  { %>
+            <li><%=error.msg %></li>
+        <% }) %>
+    </ul>
+</div>

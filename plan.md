@@ -48,6 +48,7 @@ models {
     }
     folders {
         id
+        name
         user
         files []
     }
