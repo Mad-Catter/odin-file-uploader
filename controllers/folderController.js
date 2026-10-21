@@ -1,14 +1,112 @@
-const getAllFolders = (req, res) => {
+const prisma = require('../lib/prisma');
+const { body, matchedData, validationResult } = require('express-validator');
+
+const getAllFolders = async (req, res) => {
+	const folders = (
+		await prisma.user.findUnique({
+			where: { id: req.user.id },
+			select: {
+				folders: {
+					include: {
+						files: true,
+					},
+				},
+			},
+		})
+	)?.folders;
+	console.log(folders);
 	res.render('all-folders-viewer', {
 		title: `File Uploader | ${req.user}'s folders`,
+		folders,
 	});
 };
 
-const createFolder = (req, res) => {};
+async function addNumberExtension(folderName, req) {
+	// This is to make sure there will be no repeat names.  Attempting to add a repeat name should add (x) where x is how many repeats to the end of the name.
+	// example, example(1), example(2), etc.
+	const currentFolders = (
+		await prisma.user.findUnique({
+			where: { id: req.user.id },
+			select: {
+				folders: true,
+			},
+		})
+	)?.folders;
 
-const updateFolder = (req, res) => {};
+	if (currentFolders.some((currentFolder) => currentFolder.name === folderName)) {
+		let i = 1;
+		while (true) {
+			if (currentFolders.some((currentFolder) => currentFolder.name === folderName + `(${i})`)) {
+				i++;
+			} else {
+				return folderName + `(${i})`;
+			}
+		}
+	}
+	return folderName;
+}
+const createFolder = [
+	[body('folderName').trim().isLength({ min: 1 }).withMessage('Folder must have a non-empty name')],
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty) {
+			res.status(400).render('all-folders-viewer', {
+				title: `File Uploader | ${req.user}'s folders`,
+				errors: errors.array(),
+			});
+		}
+		let { folderName } = matchedData(req);
+		folderName = await addNumberExtension(folderName, req);
+		// Do I send the newFolder back and have it reload so that the user doesn't have to refresh the page every time?  Maybe if I had react.
+		const newFolder = await prisma.folder.create({
+			data: {
+				name: folderName,
+				userId: req.user.id,
+			},
+		});
+		// CHANGE THIS
+		return res.redirect('/');
+	},
+];
 
-const deleteFolder = (req, res) => {};
+const updateFolder = [
+	[body('newFolderName').trim().isLength({ min: 1 }).withMessage('Invalid new name'), body('folderId').isInt()],
+	body('oldFolderName').trim(),
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty) {
+			res.status(400).render('all-folders-viewer', {
+				title: `File Uploader | ${req.user}'s folders`,
+				errors: errors.array(),
+			});
+		}
+		let { newFolderName, folderId, oldFolderName } = matchedData(req);
+		// This is to prevent a bug with addNumberExtension where renaming to its own name would still add an extenstion
+		// I could also add a security check here to make sure the user's id matches the folder's user id.  However that would be another query that would add time and the security is out of scope right now.
+		if (oldFolderName === newFolderName) return res.redirect('/');
+
+		newFolderName = await addNumberExtension(newFolderName, req);
+		// I could return the object the folder gives to the site and have it change the user's page based off of the object instead of the user reloading.
+		await prisma.folder.update({
+			where: {
+				id: Number(folderId),
+			},
+			data: {
+				name: newFolderName,
+			},
+		});
+		return res.redirect('/');
+	},
+];
+
+const deleteFolder = async (req, res) => {
+	await prisma.folder.delete({
+		where: {
+			id: Number(req.params.folderId),
+		},
+	});
+	return res.sendStatus(204);
+};
 
 module.exports = {
 	getAllFolders,

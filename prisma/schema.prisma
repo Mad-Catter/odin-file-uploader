@@ -22,7 +22,8 @@ model User {
 model Folder {
   id     Int    @id @default(autoincrement())
   name   String
-  user   User   @relation(fields: userId, references: [id])
+  // The onUpdate Cascade is likely unrequired
+  user   User   @relation(fields: userId, references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId Int
   files  File[]
 }
@@ -33,7 +34,8 @@ model File {
   name       String
   size       Int
   uploadTime DateTime
-  folder     Folder   @relation(fields: folderId, references: [id])
+  // The onUpdate Cascade is likely unrequired
+  folder     Folder   @relation(fields: folderId, references: [id], onDelete: Cascade, onUpdate: Cascade)
   folderId   Int
 }
 

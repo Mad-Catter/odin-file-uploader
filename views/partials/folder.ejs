@@ -1,0 +1,25 @@
+<div class="folder">
+    <button type="button" onClick="toggleFiles(event)" class="folder-toggle-button"><%= folder.name%></button>
+    <div class="edit-section hidden">
+        <form action="/folder/update-folder/<%=folder.id%>" method="POST">
+            <input type="text" name="newFolderName" value="<%=folder.name%>" minlength="1">
+            <input type="hidden" name="folderId" value="<%=folder.id%>">
+            <input type="hidden" name="oldFolderName" value="<%=folder.name%>">
+            <button type="submit">Rename</button>
+        </form>
+        <!-- DELETE BUTTON FUNCTION STILL NEEDS TO BE MADE -->
+        <button type="button" onClick="openDeleteDialog(event)">Delete</button>
+        <dialog>
+            <p>Delete <%= folder.name %> AND ALL files within it?</p>
+            <button type="button" onClick="deleteFolder(<%=folder.id%>)">Yes</button>
+            <button type="button" onClick="closeDeleteDialog(event)">No</button>
+        </dialog>
+    </div>
+    <button type="button" onClick="toggleEdit(event)" class="edit-toggle-button">edit</button>
+    <div class="files hidden">
+        <p>Im a place holder</p>
+        <% for (file of folder.files) {%>
+            <a href="/folder/<%=folder.id%>/<%=file.id%>"><%=file.name%></a>
+        <%}%>
+    </div>
+</div>

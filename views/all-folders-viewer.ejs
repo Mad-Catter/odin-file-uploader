@@ -10,5 +10,48 @@
 	<body>
 		<%- include("./partials/header") %>
 		<h1>This is the all folder viewer</h1>
+		<form action="/folder/create-folder" method="POST">
+			<label for="name">Folder Name:</label>
+			<input type="text" name="folderName" id="name" />
+			<button type="submit">submit</button>
+		</form>
+		<h1>HERE BE FOLDERS</h1>
+		<% for (folder of locals.folders) { %>
+			<%- include("./partials/folder") %>
+		<%} %>
 	</body>
+	<script>
+		function toggleFiles(e) {
+			const folderDiv = e.target.parentElement;
+			const filesDiv = folderDiv.querySelector('.files');
+			filesDiv.classList.toggle('hidden');
+		}
+		function toggleEdit(e) {
+			const folderDiv = e.target.parentElement;
+			const toggleButton = folderDiv.querySelector(".folder-toggle-button");
+			const editSection = folderDiv.querySelector(".edit-section");
+
+			toggleButton.classList.toggle("hidden");
+			editSection.classList.toggle("hidden");
+		}
+		function openDeleteDialog(e) {
+			const editDiv = e.target.parentElement;
+			const dialog = editDiv.querySelector("dialog")
+			dialog.show();
+		}
+		function closeDeleteDialog(e) {
+			const dialog = e.target.parentElement;
+			dialog.close();
+		}
+		async function deleteFolder(id) {
+			try {fetch(`/folder/delete-folder/${id}`, {
+				method: "DELETE"
+			}).then((response) => {
+					window.location.reload();
+				});
+			} catch {
+				window.location.href = "/404";
+			}
+		}
+	</script>
 </html>
