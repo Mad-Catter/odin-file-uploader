@@ -2,6 +2,7 @@ const express = require('express');
 require('./config/passport');
 const folderRouter = require('./routers/folderRouter');
 const loginRouter = require('./routers/loginRouter');
+const fileRouter = require('./routers/fileRouter');
 const port = process.env.PORT || 3000;
 const app = express();
 const passport = require('passport');
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/folder', folderRouter);
+app.use('/file', fileRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {

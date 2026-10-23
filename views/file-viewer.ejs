@@ -9,6 +9,11 @@
 	</head>
 	<body>
 		<%- include("./partials/header") %>
-		<h1>This is the file viewer</h1>
+		<h1><%=file.originalName%></h1>
+		<p>Size: <%=size%>/p></p>
+		<p>Upload Time: <%=file.uploadTime%></p>
+		<p>Folder: <%=file.folder.name%></p>
+		<button type="button">download</button>
+		<button type="button">delete</button>
 	</body>
 </html>
