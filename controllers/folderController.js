@@ -15,9 +15,8 @@ const getAllFolders = async (req, res) => {
 			},
 		})
 	)?.folders;
-	console.log(folders);
 	res.render('all-folders-viewer', {
-		title: `File Uploader | ${req.user}'s folders`,
+		title: `File Uploader | ${req.user.username}'s folders`,
 		folders,
 	});
 };

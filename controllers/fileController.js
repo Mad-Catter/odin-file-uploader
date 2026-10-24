@@ -13,11 +13,9 @@ const getFile = async (req, res) => {
 	});
 	// This will need to be changed for the share function
 	if (file.folder.userId !== req.user.id) {
-		console.log(file.folder);
-		console.log(req.user.id);
 		throw new Error('incorrect user for file');
 	}
-	// I stole this off of geeksforgeeks.org
+	// I copied this off of geeksforgeeks.org
 	const size = (() => {
 		if (file.size === 0) {
 			return '0.00 B';
@@ -97,9 +95,22 @@ const postCreateFile = [
 	},
 ];
 
-const downloadFile = (req, res) => {};
+const downloadFile = async (req, res) => {
+	// There is currently no safety measures on if a user is allowed to download this file or not.
+	const file = await prisma.file.findUnique({
+		where: { id: Number(req.params.id) },
+	});
+	console.log(file.fileLink);
+	res.download(file.fileLink, file.originalName);
+};
 
-const deleteFile = (req, res) => {};
+const deleteFile = async (req, res) => {
+	// Again currently no safety measures.  That is out of scope currently but could be useful
+	const file = await prisma.file.delete({
+		where: { id: Number(req.params.id) },
+	});
+	return res.sendStatus(204);
+};
 
 module.exports = {
 	getFile,

@@ -18,8 +18,8 @@
     <button type="button" onClick="toggleEdit(event)" class="edit-toggle-button">edit</button>
     <div class="files hidden">
         <p>Im a place holder</p>
-        <% for (file of folder.files) {%>
-            <a href="/folder/<%=folder.id%>/<%=file.id%>"><%=file.name%></a>
+        <% for (const file of folder.files) {%>
+            <a href="/file/<%=file.id%>"><%=file.originalName%></a>
         <%}%>
     </div>
 </div>
