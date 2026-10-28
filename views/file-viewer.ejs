@@ -20,7 +20,6 @@
 	</body>
 	<script>
 		async function deleteFile() {
-			console.log('here i go deleting again');
 			try {
 				const response = await fetch('./<%=file.id%>/delete-file', {
 					method: 'DELETE',

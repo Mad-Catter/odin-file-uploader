@@ -10,5 +10,8 @@
 	<body>
 		<%- include("./partials/header") %>
 		<h1>404</h1>
+		<% if (locals.err) { %>
+			<p><%= err %></p>
+		<% } %>
 	</body>
 </html>

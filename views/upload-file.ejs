@@ -9,10 +9,15 @@
 	</head>
 	<body>
 		<%- include("./partials/header") %>
+		
 		<h1>This is upload file</h1>
+		<% if (locals.errors) { %>
+			<%- include("./partials/errors-array.ejs") %>
+		<% } %>
 		<% if (locals.folders) { %>
 			<form action="upload-file" method="post" enctype="multipart/form-data">
 				<label for="file">Upload your file:</label>
+				<p>Size must be below 5mb.</p>
 				<input type="file" name="file" id="file" required/>
 				<select name="folderId" id="folder" required>
 					<% folders.forEach(folder => { %>
@@ -25,4 +30,14 @@
 			<h2 class="error">You must have at least one folder to upload a file</h2>
 		<% }%>
 	</body>
+	<script>
+		const uploadField = document.getElementById("file");
+		uploadField.onchange = function() {
+			// 5mb is the limit
+			if(this.files[0].size > 5242880) {
+			alert("File is too big!");
+			this.value = "";
+			}
+		};
+	</script>
 </html>

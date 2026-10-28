@@ -3,12 +3,12 @@ const multer = require('multer');
 const { body, matchedData, validationResult } = require('express-validator');
 const { addNumberExtension, deleteFilePrismaNSupabase } = require('./helpers');
 const { createClient } = require('@supabase/supabase-js');
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+	storage: multer.memoryStorage(),
+});
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY);
 
 const getFile = async (req, res) => {
-	const buckets = await supabase.storage.listBuckets();
-	console.log(buckets);
 	const file = await prisma.file.findUnique({
 		where: { id: Number(req.params.id) },
 		include: {
@@ -16,6 +16,9 @@ const getFile = async (req, res) => {
 		},
 	});
 	// This will need to be changed for the share function
+	if (!req.user) {
+		throw new Error('you must be logged in to see this file');
+	}
 	if (file.folder.userId !== req.user.id) {
 		throw new Error('incorrect user for file');
 	}
@@ -48,7 +51,6 @@ const getCreateFile = async (req, res) => {
 		folders,
 	});
 };
-// Currently if there is an error the item is still downloaded.  I need to delete that later, but since cloud if the final goal I am not going to put in the work yet
 const postCreateFile = [
 	upload.single('file'),
 	[
@@ -64,6 +66,23 @@ const postCreateFile = [
 				return true;
 			})
 			.withMessage('Invalid folder'),
+		body('file')
+			.custom((value, { req }) => {
+				if (!req.file) {
+					throw new Error('You must upload a file');
+				}
+				return true;
+			})
+			.withMessage('You must upload a file'),
+		body('file')
+			.custom((value, { req }) => {
+				// 5 mb limit
+				if (req.file.size > 5242880) {
+					throw new Error('File too large');
+				}
+				return true;
+			})
+			.withMessage('File too large'),
 	],
 	async (req, res) => {
 		const errors = validationResult(req);
@@ -111,10 +130,19 @@ const postCreateFile = [
 ];
 
 const downloadFile = async (req, res) => {
-	// There is currently no safety measures on if a user is allowed to download this file or not.
+	if (!req.user) {
+		throw new Error('You must be logged in to download this file');
+	}
+
 	const file = await prisma.file.findUnique({
 		where: { id: Number(req.params.id) },
+		include: {
+			folder: true,
+		},
 	});
+	if (file.folder.userId !== req.user.id) {
+		throw new Error('Incorrect user for file');
+	}
 
 	if (!file) {
 		return res.status(404).send('File not found');
