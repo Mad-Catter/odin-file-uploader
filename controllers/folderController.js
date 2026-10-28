@@ -1,6 +1,6 @@
 const prisma = require('../lib/prisma');
 const { body, matchedData, validationResult } = require('express-validator');
-const { addNumberExtension } = require('./helpers');
+const { addNumberExtension, deleteFilePrismaNSupabase } = require('./helpers');
 
 const getAllFolders = async (req, res) => {
 	const folders = (
@@ -76,10 +76,23 @@ const updateFolder = [
 ];
 
 const deleteFolder = async (req, res) => {
-	await prisma.folder.delete({
+	const folder = await prisma.folder.findUnique({
 		where: {
 			id: Number(req.params.folderId),
 		},
+		include: {
+			files: true,
+		},
+	});
+	try {
+		for (file of folder.files) {
+			deleteFilePrismaNSupabase(file);
+		}
+	} catch (error) {
+		return res.status(500).send('Could not delete file from storage');
+	}
+	await prisma.folder.delete({
+		where: { id: folder.id },
 	});
 	return res.sendStatus(204);
 };

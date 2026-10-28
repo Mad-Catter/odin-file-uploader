@@ -1,4 +1,7 @@
 const prisma = require('../lib/prisma');
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY);
 
 async function addNumberExtension(folderName, req) {
 	// This is to make sure there will be no repeat names.  Attempting to add a repeat name should add (x) where x is how many repeats to the end of the name.
@@ -25,4 +28,17 @@ async function addNumberExtension(folderName, req) {
 	return folderName;
 }
 
-module.exports = { addNumberExtension };
+const deleteFilePrismaNSupabase = async (file) => {
+	const { error } = await supabase.storage.from('file-uploader').remove([file.fileLink]);
+
+	if (error) {
+		console.error(error);
+		throw Error(error);
+	}
+
+	await prisma.file.delete({
+		where: { id: file.id },
+	});
+};
+
+module.exports = { addNumberExtension, deleteFilePrismaNSupabase };

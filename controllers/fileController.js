@@ -1,10 +1,14 @@
 const prisma = require('../lib/prisma');
 const multer = require('multer');
-const upload = multer({ dest: './public/uploads' });
 const { body, matchedData, validationResult } = require('express-validator');
-const { addNumberExtension } = require('./helpers');
+const { addNumberExtension, deleteFilePrismaNSupabase } = require('./helpers');
+const { createClient } = require('@supabase/supabase-js');
+const upload = multer({ storage: multer.memoryStorage() });
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY);
 
 const getFile = async (req, res) => {
+	const buckets = await supabase.storage.listBuckets();
+	console.log(buckets);
 	const file = await prisma.file.findUnique({
 		where: { id: Number(req.params.id) },
 		include: {
@@ -39,7 +43,6 @@ const getCreateFile = async (req, res) => {
 			},
 		})
 	)?.folders;
-	console.log(folders);
 	res.render('upload-file', {
 		title: 'File Uploader | Upload File',
 		folders,
@@ -81,11 +84,23 @@ const postCreateFile = [
 		}
 		const { folderId } = matchedData(req);
 		const originalName = await addNumberExtension(req.file.originalname, req);
+		// This ia all claude and I should look closer at this
+		const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+		const path = `uploads/${Date.now()}-${safeName}`;
+		const { data, error } = await supabase.storage.from('file-uploader').upload(path, req.file.buffer, {
+			contentType: req.file.mimetype,
+			upsert: false,
+		});
+		if (error) {
+			console.error(error);
+			return res.status(500).send('Upload failed');
+		}
+		// This is all claude ^^
+
 		const result = await prisma.file.create({
-			// This will need to be changed later when I change to uploading a file to the cloud
 			data: {
-				fileLink: req.file.path,
-				fileName: req.file.filename,
+				fileLink: data.path,
+				fileName: safeName,
 				originalName: originalName,
 				size: req.file.size,
 				folderId: Number(folderId),
@@ -100,15 +115,38 @@ const downloadFile = async (req, res) => {
 	const file = await prisma.file.findUnique({
 		where: { id: Number(req.params.id) },
 	});
-	console.log(file.fileLink);
-	res.download(file.fileLink, file.originalName);
+
+	if (!file) {
+		return res.status(404).send('File not found');
+	}
+
+	const { data, error } = await supabase.storage.from('file-uploader').download(file.fileLink);
+
+	if (error) {
+		console.error(error);
+		return res.status(500).send('Download failed');
+	}
+
+	const buffer = Buffer.from(await data.arrayBuffer());
+	res.setHeader('Content-Type', data.type || 'application/octet-stream');
+	res.attachment(file.originalName); // sets Content-Disposition with a safe filename
+	res.send(buffer);
 };
 
 const deleteFile = async (req, res) => {
 	// Again currently no safety measures.  That is out of scope currently but could be useful
-	const file = await prisma.file.delete({
+	const file = await prisma.file.findUnique({
 		where: { id: Number(req.params.id) },
 	});
+	if (!file) {
+		return res.redirect('/404');
+	}
+	try {
+		await deleteFilePrismaNSupabase(file);
+	} catch (error) {
+		// I should maybe change this to a better response handler.
+		return res.status(500).send('Could not delete file from storage');
+	}
 	return res.sendStatus(204);
 };
 
