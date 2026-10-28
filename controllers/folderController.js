@@ -86,7 +86,7 @@ const deleteFolder = async (req, res) => {
 	});
 	try {
 		for (file of folder.files) {
-			deleteFilePrismaNSupabase(file);
+			await deleteFilePrismaNSupabase(file);
 		}
 	} catch (error) {
 		return res.status(500).send('Could not delete file from storage');
