@@ -11,7 +11,7 @@
 		<%- include("./partials/header") %>
 		<h1>This is create account</h1>
 		<% if (locals.errors) { %>
-			<%- include("./partials/account-errors.ejs") %>
+			<%- include("./partials/errors-array.ejs") %>
 		<% } %>
 		<form action="/create-account" method="POST">
 			<label for="username">Username:</label>

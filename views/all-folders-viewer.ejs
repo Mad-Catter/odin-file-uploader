@@ -6,6 +6,7 @@
 		<title><%= title %></title>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
 		<link rel="stylesheet" href="/style.css" />
+		<script src="js/allFoldersViewer.js" defer></script>
 	</head>
 	<body>
 		<%- include("./partials/header") %>
@@ -19,39 +20,21 @@
 		<% for (folder of locals.folders) { %>
 			<%- include("./partials/folder") %>
 		<%} %>
+		<dialog id="share-modal">
+			<form action="/share/create-link" method="post" id="share-form">
+				<input type="hidden" name="folderId" id="share-id">
+				<label for="duration">Amount of days the link will work:</label>
+				<input type="number" name="duration" id="duration" value="1" max="31" min="1" step="1" required>
+				<button type="submit">Submit</button>
+			</form>
+			<button type="button" id="close-button" onClick="closeShareModal()">Close</button>
+			<p class="hidden" id="creating">Creating share link...</p>
+			<p class="hidden error" id="share-error">An error occured creating your share link!</p>
+			<div class="hidden" id="link-div">
+				<input type="text" readonly id="share-link">
+				<button type="button" onClick="copyLink()">Copy Link</button>
+			</div>
+		</dialog>
 	</body>
-	<script>
-		function toggleFiles(e) {
-			const folderDiv = e.target.parentElement;
-			const filesDiv = folderDiv.querySelector('.files');
-			filesDiv.classList.toggle('hidden');
-		}
-		function toggleEdit(e) {
-			const folderDiv = e.target.parentElement;
-			const toggleButton = folderDiv.querySelector(".folder-toggle-button");
-			const editSection = folderDiv.querySelector(".edit-section");
-
-			toggleButton.classList.toggle("hidden");
-			editSection.classList.toggle("hidden");
-		}
-		function openDeleteDialog(e) {
-			const editDiv = e.target.parentElement;
-			const dialog = editDiv.querySelector("dialog")
-			dialog.show();
-		}
-		function closeDeleteDialog(e) {
-			const dialog = e.target.parentElement;
-			dialog.close();
-		}
-		async function deleteFolder(id) {
-			try {fetch(`/folder/delete-folder/${id}`, {
-				method: "DELETE"
-			}).then((response) => {
-					window.location.reload();
-				});
-			} catch {
-				window.location.href = "/404";
-			}
-		}
-	</script>
+	
 </html>

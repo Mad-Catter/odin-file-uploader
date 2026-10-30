@@ -1,5 +1,6 @@
 <div class="folder">
     <button type="button" onClick="toggleFiles(event)" class="folder-toggle-button"><%= folder.name%></button>
+    <button type="button" onClick="openShareModal(<%=folder.id%>)">Share</button>
     <div class="edit-section hidden">
         <form action="/folder/update-folder/<%=folder.id%>" method="POST">
             <input type="text" name="newFolderName" value="<%=folder.name%>" minlength="1">

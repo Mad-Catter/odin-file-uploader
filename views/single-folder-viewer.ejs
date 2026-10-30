@@ -10,5 +10,16 @@
 	<body>
 		<%- include("./partials/header") %>
 		<h1>This is the single folder viewer</h1>
+		<% if (!locals.invalid) { %>
+			<div class="files">
+				<h1><%=folder.name%></h1>
+				<% for (const file of folder.files) {%>
+					<a href="<%=locals.url%>/<%=file.id%>"><%=file.originalName%></a>
+				<%}%>
+			</div>
+		<% } else { %>
+			<h1>The link you used is either expired or invalid.</h1>
+		<% } %>
+		
 	</body>
 </html>

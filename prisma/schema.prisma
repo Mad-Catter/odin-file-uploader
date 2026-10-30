@@ -20,12 +20,13 @@ model User {
 }
 
 model Folder {
-  id     Int    @id @default(autoincrement())
+  id     Int     @id @default(autoincrement())
   name   String
   // The onUpdate Cascade is likely unrequired
-  user   User   @relation(fields: userId, references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User    @relation(fields: userId, references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId Int
   files  File[]
+  shares Share[]
 
   @@unique([name, userId])
 }
@@ -42,6 +43,14 @@ model File {
   folderId     Int
 
   @@unique([folderId, originalName])
+}
+
+model Share {
+  id              Int      @id @default(autoincrement())
+  url             String   @unique
+  deleteTimestamp DateTime
+  folder          Folder   @relation(fields: folderId, references: [id], onDelete: Cascade, onUpdate: Cascade)
+  folderId        Int
 }
 
 model Session {

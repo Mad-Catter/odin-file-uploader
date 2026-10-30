@@ -33,14 +33,12 @@ const createFolder = [
 		}
 		let { folderName } = matchedData(req);
 		folderName = await addNumberExtension(folderName, req);
-		// Do I send the newFolder back and have it reload so that the user doesn't have to refresh the page every time?  Maybe if I had react.
 		const newFolder = await prisma.folder.create({
 			data: {
 				name: folderName,
 				userId: req.user.id,
 			},
 		});
-		// CHANGE THIS
 		return res.redirect('/');
 	},
 ];

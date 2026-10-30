@@ -1,6 +1,5 @@
 const prisma = require('../lib/prisma');
 const { createClient } = require('@supabase/supabase-js');
-
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY);
 
 async function addNumberExtension(folderName, req) {
@@ -40,5 +39,26 @@ const deleteFilePrismaNSupabase = async (file) => {
 		where: { id: file.id },
 	});
 };
-
-module.exports = { addNumberExtension, deleteFilePrismaNSupabase };
+const validateURL = async (url) => {
+	const match = await prisma.share.findUnique({
+		where: { url },
+		include: {
+			folder: {
+				include: {
+					files: true,
+				},
+			},
+		},
+	});
+	if (!match) {
+		return false;
+	}
+	if (match.deleteTimestamp < Date.now()) {
+		await prisma.share.delete({
+			where: { url },
+		});
+		return false;
+	}
+	return match.folder;
+};
+module.exports = { addNumberExtension, deleteFilePrismaNSupabase, validateURL };

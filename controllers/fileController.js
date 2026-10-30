@@ -3,6 +3,7 @@ const multer = require('multer');
 const { body, matchedData, validationResult } = require('express-validator');
 const { addNumberExtension, deleteFilePrismaNSupabase } = require('./helpers');
 const { createClient } = require('@supabase/supabase-js');
+// Multer is using memory storage because will save the files in the supabase cloud.
 const upload = multer({
 	storage: multer.memoryStorage(),
 });
@@ -15,7 +16,6 @@ const getFile = async (req, res) => {
 			folder: true,
 		},
 	});
-	// This will need to be changed for the share function
 	if (!req.user) {
 		throw new Error('you must be logged in to see this file');
 	}
@@ -56,6 +56,7 @@ const postCreateFile = [
 	[
 		body('folderId')
 			.isInt()
+			// Simple validation to make sure the user is valid.
 			.custom(async (folderId, { req }) => {
 				const folder = await prisma.folder.findUnique({
 					where: { id: Number(folderId) },
@@ -157,7 +158,7 @@ const downloadFile = async (req, res) => {
 
 	const buffer = Buffer.from(await data.arrayBuffer());
 	res.setHeader('Content-Type', data.type || 'application/octet-stream');
-	res.attachment(file.originalName); // sets Content-Disposition with a safe filename
+	res.attachment(file.originalName);
 	res.send(buffer);
 };
 

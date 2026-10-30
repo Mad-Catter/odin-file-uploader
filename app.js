@@ -3,6 +3,7 @@ require('./config/passport');
 const folderRouter = require('./routers/folderRouter');
 const loginRouter = require('./routers/loginRouter');
 const fileRouter = require('./routers/fileRouter');
+const shareRouter = require('./routers/shareRouter');
 const port = process.env.PORT || 3000;
 const app = express();
 const passport = require('passport');
@@ -12,6 +13,7 @@ const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static('public'));
 
 const store = new PrismaSessionStore(prisma, {
@@ -36,6 +38,7 @@ app.use((req, res, next) => {
 
 app.use('/folder', folderRouter);
 app.use('/file', fileRouter);
+app.use('/share', shareRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {
@@ -46,6 +49,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
 	console.log(err);
+	// I should change this to only show certain errors.
 	res.status(404).render('404', {
 		title: 'Club | 404',
 		err,

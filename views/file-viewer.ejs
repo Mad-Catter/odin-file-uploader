@@ -9,30 +9,39 @@
 	</head>
 	<body>
 		<%- include("./partials/header") %>
-		<h1><%=file.originalName%></h1>
-		<p>Size: <%=size%>/p></p>
-		<p>Upload Time: <%=file.uploadTime%></p>
-		<p>Folder: <%=file.folder.name%></p>
-		<a href="./<%=file.id%>/download">
-			<button type="button">download</button>
-		</a>
-		<button type="button" onClick="deleteFile()">delete</button>
+		<% if (!locals.invalid) { %>
+			<h1><%=file.originalName%></h1>
+			<p>Size: <%=size%>/p></p>
+			<p>Upload Time: <%=file.uploadTime%></p>
+			<p>Folder: <%=file.folder.name%></p>
+			<a href="./<%=file.id%>/download">
+				<button type="button">download</button>
+			</a>
+			<% if (!locals.shared) { %>
+				<button type="button" onClick="deleteFile()">delete</button>
+			<% } %>
+			
+		<% } else {  %>
+			<h1>The link you used is either expired or invalid.</h1>
+		<% } %>
 	</body>
-	<script>
-		async function deleteFile() {
-			try {
-				const response = await fetch('./<%=file.id%>/delete-file', {
-					method: 'DELETE',
-				});
-				if (!response.ok) {
-					throw new Error('Could not delete');
-				}
+	<% if (!locals.shared && !locals.invalid) { %>
+		<script>
+			async function deleteFile() {
+				try {
+					const response = await fetch('./<%=file.id%>/delete-file', {
+						method: 'DELETE',
+					});
+					if (!response.ok) {
+						throw new Error('Could not delete');
+					}
 
-				window.location.href = '/';
-			} catch (error) {
-				console.error(error);
-				window.location.href = '/404';
+					window.location.href = '/';
+				} catch (error) {
+					console.error(error);
+					window.location.href = '/404';
+				}
 			}
-		}
-	</script>
+		</script>
+	<% } %>
 </html>
